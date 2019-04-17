@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>popUp</title>
+    <script>                
+        function valExchangeNext (arr, idx) {            
+            let temp = arr[idx]
+            arr[idx] = arr[idx + 1]
+            arr[idx + 1] = temp
+            return false
+        }
+        function popUp (arr, upType) { // 基本实现是使用两个for循环进行查找和排序，实现冒泡查找，默认为升序                                                 
+            let num = 0            
+            for (let i = 0; i < arr.length -1; i++) {                
+                for (let j = 0; j < arr.length - i - 1; j++) {                    
+                    if (!upType && arr[j] > arr[j + 1]) { // max值置后代表up
+                        valExchangeNext(arr, j)
+                    } 
+                    if (upType && arr[j] < arr[j + 1]) { // down代表降序，max值置前代表                        
+                            valExchangeNext(arr, j)                        
+                    }
+                    num++
+                }
+            }
+            return num
+        }
+        function popUpBetter (arr, upType) { // 基本实现是使用两个for循环进行查找和排序，实现冒泡查找，默认为升序                                                 
+            let num = 0         
+            let notExchange
+            for (let i = 0; i < arr.length -1; i++) {                
+                notExchange = true                
+                for (let j = 0; j < arr.length - i - 1; j++) {                    
+                    if (!upType && arr[j] > arr[j + 1]) { // max值置后代表up                        
+                        notExchange = valExchangeNext(arr, j)
+                    } 
+                    if (upType && arr[j] < arr[j + 1]) { // down代表降序，max值置前代表                        
+                        notExchange = valExchangeNext(arr, j)                        
+                    }
+                    num++
+                }
+                if (notExchange) {
+                    break
+                }                
+            }
+            return num
+        }
+        
+        let arr = [1, 2, 3, 4, 5, 6]
+        let copyArr = arr.concat() 
+        console.log(arr)       
+        console.log(`基础升序冒泡时间复杂度O(${arr.length})为:`, popUp(arr), arr)
+        arr = copyArr.concat()
+        console.log(`基础降序冒泡时间复杂度O(${arr.length})为:`, popUp(arr, true), arr) 
+        arr = copyArr.concat()     
+        console.log(`更好的基础升序冒泡时间复杂度O(${arr.length})为:`, popUpBetter(arr), arr)
+        arr = copyArr.concat()
+        console.log(`更好的基础降序冒泡时间复杂度O(${arr.length})为:`, popUpBetter(arr, true), arr)    
+        console.log('可以看出，优化后最多可以少0 + 1 + ... + (n - 2)次比较')    
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

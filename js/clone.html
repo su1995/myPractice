@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script>
+        function deepClone (tar) {
+        let res        
+        if(typeof tar === 'object'){
+        if(Array.isArray(tar)){res = []} else {res = {}}
+        }else return tar
+        for(let i in tar){             
+        if(typeof tar[i] === 'object'){
+            res[i] = deepClone(tar[i])
+        }else{
+            res[i] = tar[i]
+        }  
+        }
+        return res
+        }
+        x = deepClone({a:{b:{c:2}}, c: 3})
+        x.d = [{a: 999, b: 222}]
+        z = deepClone(x)
+        z.d.a =  2
+        console.info(x)
+        console.info(z)
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

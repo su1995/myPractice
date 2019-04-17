@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Page Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">    
+  <script>
+    /**
+    promise
+    waht 用于处理异步回调的一种解决方案，比传统回调更强大合理
+    两个特征： 
+    1. 对象状态不受外界影响，三种状态为： pengding, fulfilled(已成功), rejected(已失败)
+    2. 状态改变后不在改变，只有两种改变: pending->fulfilled /  pending->rejected 
+    三个缺点： 
+    1. new后无法取消
+    2. 无回调则内部错误无法抛出
+    why 异步处理回调
+    How to use 
+    const promise = new Promise((resolve, reject) => {
+      if (异步操作完毕) {
+        resolve(val)
+      } else {
+        reject(error)
+      }
+    })
+    promise.then((val) => {
+      // doSuccess
+    }, (err) => {
+      // doFailure
+    })
+    */
+    // 异步加载图片
+    function loadImageAsync(url) {
+        return new Promise(function(resolve, reject) {
+        const image = new Image();
+
+        image.onload = function() {
+          resolve(image);
+        };
+
+        image.onerror = function() {
+          reject(new Error('Could not load image at ' + url));
+        };
+
+        image.src = url;
+      });
+    }
+    // 手写一个ajax by promise 
+    function _ajaxGet (url, params) {
+        const promise =  new Promise(function(resolve, reject){
+            const handle = function () {
+                if (this.readyState == 4) {
+                    if (this.status === 200 || this.status === 304) {
+                        resolve(this.response)                                         
+                    } else {
+                        reject(new Error(this.statusText))                        
+                    }
+                }                
+            }
+            const XHR = XMLHttpRequest ? new XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP')
+            params = params || ''      
+            XHR.open('GET', url + params, true)
+            XHR.onreadystatechange = handle
+            XHR.responseType = 'json'
+            XHR.setRequestHeader('Accept', 'application/json')
+            XHR.send()
+        })
+        return promise
+    }
+    function _ajaxPost (url, data) {
+        const promise =  new Promise(function(resolve, reject){
+            const handle = function () {
+                if (this.readyState == 4) {
+                    if (this.status === 200 || this.status === 304) {
+                        resolve(this.response)                                              
+                    } else {
+                        reject(new Error(this.statusText))                        
+                    }
+                }                
+            }
+            const XHR = XMLHttpRequest ? new XMLHttpRequest() : new window.ActiveXObject('Microsoft.XMLHTTP')              
+            XHR.open('POST', url, true)
+            XHR.onreadystatechange = handle
+            XHR.responseType = 'json'
+            XHR.setRequestHeader('Content-Type', '"application/json')
+            XHR.send(data)            
+        })
+        return promise
+    }
+    _ajaxGet('test.json').then(res => {
+        console.log(res)
+    }).catch(err => {        
+        console.log(err)
+    })
+    _ajaxPost('test.json', {id: 123})
+
+    function testAwait(){
+        setTimeout(function(){
+                console.log("testAwait");
+            }, 1000);
+    }
+    async function helloAsync(){
+        await testAwait();
+        console.log("helloAsync");
+    }
+    helloAsync()
+  </script>
+</head>
+<body>
+  
+</body>
+</html>

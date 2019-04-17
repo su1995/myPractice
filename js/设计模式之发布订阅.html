@@ -1,0 +1,111 @@
+<!--
+ * @Description: Javascript
+ * @Author: suyang
+ * @LastEditors: Please set LastEditors
+ * @Date: 2019-03-03 16:56:46
+ * @LastEditTime: 2019-03-24 21:04:51
+ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>    
+    <script>        
+    /**
+       自己之前实现的思路：
+        所谓观察者模式，即发布订阅模式。通过一个全局的对象将发布者与订阅者联系在一起，监听者监听某个事件发生的时候，就通知了发布者，发布者将该全局对象拿过来取出订阅者列表，遍历并选择对应的订阅者
+        订阅的方法执行，这样就实现发布者发布事件时
+    */        
+        let Publisher = {}  // 发布者对象
+        let Subscriber = {}  // 订阅者对象
+        Subscriber.subscribeList = {} // 订阅者列表 
+        /**
+         * @description: 订阅者订阅方法
+         * @param {
+         *      name: '',
+         *      phoneNum: '',
+         *      goodsColor: '',
+         *      goods: ''
+         * } 
+         * @return: 
+         */
+        Subscriber.subscribe = function (key, fn) {
+            if (!this.subscribeList[key]) {
+              this.subscribeList[key] = []
+            }              
+            this.subscribeList[key].push(fn)
+        }
+        /**
+         * @description: 订阅者取消某个人的订阅方法
+         * @param {type} 
+         * @return: 
+         */
+        Subscriber.remove = function (key, fn) {
+          var fns = this.subscribeList[key];//取出该类型的对应的消息集合
+          if (!fns) {//如果对应的key没有订阅直接返回
+              return false;
+          }
+          if (!fn) {//如果没有传入具体的回掉，则表示需要取消所有订阅
+              fns && (fns.length = 0);
+          } else {
+            for(var l = fns.length-1; l >= 0; l--){//遍历回掉函数列表
+                if(fn === fns[l]){
+                    fns.splice(l,1);//删除订阅者的回掉
+                }
+            }
+          }
+        }
+        userBlack = {
+          name: '小黑',
+          wxid: 'xxxx1'
+        }
+        userRed = {
+          name: '小红',
+          wxid: 'xxxx2'
+        }
+        userTuhao = {
+          name: '小土豪',
+          wxid: 'xxxx3'
+        }
+        function doFn (objInfo, userInfo) {
+          console.info(`给${userInfo.name},微信id为${userInfo.wxid},发送以下消息：${objInfo.goodsColor}${objInfo.goods}到货,售价${objInfo.goodsPrice}`)
+        }
+        function redFn (objInfo) {
+          doFn(objInfo, userRed)
+        }
+        function blackFn (objInfo) {
+          doFn(objInfo, userBlack)
+        }
+        function tuhaoFn (objInfo) {           
+          doFn(objInfo, userTuhao)
+        }
+        // 订阅者代码订阅
+        Subscriber.subscribe('red', redFn)    
+        Subscriber.subscribe('red', tuhaoFn)    
+        Subscriber.subscribe('black', blackFn)        
+        Subscriber.subscribe('black', tuhaoFn)        
+        
+        Subscriber.publish = function () {
+            let key = [].shift.call(arguments),//取出消息类型
+            fns = this.subscribeList[key];//取出该类型的对应的消息集合
+            if (!fns && fns.length === 0) return false
+            for (const fn of fns) {
+                fn.apply(this, arguments)
+            }
+        }        
+    </script>
+    <style>
+        body{
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+    open the developer tools<br><br>
+    <input type="button" value="黑色高跟鞋￥123到货" onclick="Subscriber.publish('black', {goods: '高跟鞋', goodsColor: 'black', goodsPrice: '￥123'})">    
+    <input type="button" value="红色高跟鞋￥135到货" onclick="Subscriber.publish('red', {goods: '高跟鞋', goodsColor: 'red', goodsPrice: '￥135'})">
+    <input type="button" value="remove小黑的订阅" onclick="Subscriber.remove('black', blackFn)">
+</body>
+</html>
