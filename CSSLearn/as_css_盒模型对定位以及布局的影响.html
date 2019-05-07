@@ -1,0 +1,95 @@
+<!--
+ * @Description: 盒模型练习
+ * @Author: anthony_su
+ * @LastEditors: Please set LastEditors
+ * @Date: 2019-05-07 23:50:12
+ * @LastEditTime: 2019-05-08 01:36:44
+ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>as_css_盒模型对定位以及布局的影响</title>
+    <link rel="stylesheet" href="../assets/css/theme.css">
+    <link rel="stylesheet" href="../assets/css/common.css">
+    <style>
+        div {
+            width: 300px;
+            height: 300px;         
+            margin: 50px auto;
+            background: #333;           
+        }
+        .border-div {
+            box-sizing: border-box;
+            position: relative;   
+            width: 300px;
+            height: 300px;         
+            margin: 50px auto;
+            padding-top: 60px;
+            border-top: 50px solid;
+            background: #333;            
+        }
+        .border-div-child {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            border: 1px solid royalblue;
+        }
+        .content-div {
+            box-sizing: content-box;
+            position: relative;               
+            width: 300px;
+            height: 300px;         
+            margin: 50px auto;
+            padding-top: 60px;
+            border-top: 50px solid;
+            background: #333;     
+        }
+        .content-div-child {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            border: 1px solid royalblue;
+        }
+        p {
+            color: thistle;
+        }
+    </style>
+</head>
+<body>
+    <div class="border-div">
+        this is a box-sizing: border-box div Element padding top 30px<br>
+        ok, u can c absol ele don't be influenced by parents' attri of padding, and <strong>be influenced by parents' border</strong><br>
+        so its position is influenced by parents' content - border. when border change ,content change , then p position change.<br>
+        its content offsetHeight（实际高度） is 300, so box-sizing can influenced by box-sizing.<br>
+        its content scrollHeight（所有累加高度） is 417 , so box-sizing can influence conentFactHeight, when height is not auto.<br>
+        its content clientHeight(可视区域) is 250 , it can be influenced by height, when height is not auto.<br>
+        <p class="border-div-child">this is a absolute p Element top: 30px only influenced by clientHeight(可视区域)</p>
+    </div>
+    <div class="content-div">
+        this is a box-sizing: border-box div Element padding top 30px<br>
+        ok, u can c absol ele don't be influenced by parents' attri of padding, and <strong>be influenced by parents' border</strong><br>
+        so its position is influenced by parents' content - border. when border change ,content change , then p position change.<br>
+        its content offsetHeight is 410, so box-sizing can influence conentFactHeight,<br>
+        <p class="border-div-child">this is a absolute p Element top: 30px only influenced by clientHeight(可视区域)</p>
+    </div>
+    <div>
+        so box-sizing: border-box is content = height  =  padding + border-width + height(css set or css default) = offsetHeight<br>
+        so box-sizing: content-box is content = height(css set or css default) + padding  + border-width = offsetHeight<br>
+        and box-sizing influence these who are offsetHeight, clientHeight, scrollHeight<br>
+        when layout : it judge content to layout.
+    </div>
+    <script>
+        console.info(document.querySelector('.border-div').height)
+        console.info(document.querySelector('.border-div').offsetHeight, 'offsetHeight')
+        console.info(document.querySelector('.border-div').clientHeight, 'clientHeight')
+        console.info(document.querySelector('.border-div').scrollHeight, 'scrollHeight')
+        console.info(document.querySelector('.content-div').offsetHeight, 'offsetHeight')
+        console.info(document.querySelector('.content-div').clientHeight, 'clientHeight')
+        console.info(document.querySelector('.content-div').scrollHeight, 'scrollHeight')
+    </script>    
+</body>
+</html>
