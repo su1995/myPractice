@@ -1,0 +1,112 @@
+<!--
+ * @Description: In User Settings Edit
+ * @Author: anthony_su
+ * @Date: 2019-06-02 17:46:56
+ * @LastEditTime: 2019-06-02 19:18:41
+ * @LastEditors: Please set LastEditors
+ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>test</title>
+    <script>        
+        /**
+         * @description: 简易函数防抖，用于如滚动触发等频繁触发行为的场景
+         * @param {type} 
+         * @return: 
+         */
+        function debounce (func, time = 50) {
+            let timer            
+            const _debounce = function () {
+                if (timer) {
+                    clearTimeout(timer)
+                }
+                timer = setTimeout(() => {
+                    // func() something u want to do
+                    console.log('go')
+                }, time)
+            } 
+            _debounce.cancel = function () {
+                clearTimeout(timer)
+                timer = null
+            }
+            return _debounce           
+        }
+        window.onscroll = debounce()
+    </script>
+    <script>
+        function func () {
+            console.log('go')
+        }
+        const debounce = (
+            func, 
+            time = 50, 
+            options = {
+                leading: true,
+                trailing: true,
+                context: null
+            }
+        ) => {
+            let timer
+            const _debounce = function (...args) {                
+                if (timer) {
+                    clearTimeout(timer)
+                }                
+                if (!timer && options.leading) {                
+                    timer = setTimeout(null, time)
+                    func.apply(options.context, args)
+                } else if (options.trailing) {
+                    timer = setTimeout(() => {
+                        func.apply(options.context, args)
+                        timer = null                
+                    }, time)
+                }                
+            } 
+            _debounce.cancel = function () {
+                clearTimeout(timer)
+                timer = null
+            }
+            return _debounce  
+        }
+        window.onscroll = debounce(func, 50, { leading: false, trailing: true })
+    </script>
+    <script>
+        /**
+         * @description: simple 节流
+         * @param {type} 
+         * @return: 
+         */
+        function throttle (func, time = 50) {                    
+            let previous = new Date().getTime()
+            let timer
+            const _throttle = function () {
+                let now = new Date().getTime()
+                if (now - previous < time) {
+                    clearTimeout(timer)
+                }
+                timer = setTimeout(() => {
+                    // func() something u want to do
+                    console.log('go')
+                }, time)
+            }
+            _throttle.cancel = function () { // cancel throttle and release memory
+                clearTimeout (timer)
+                previous = 0
+                timer = null
+            }
+        }
+    </script>
+    <style>
+        main {
+            height: 1920px;
+        }
+    </style>
+</head>
+<body>
+    <main>        
+    </main>
+</body>
+</html>
