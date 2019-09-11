@@ -1,0 +1,175 @@
+<!--
+ * @Description: In User Settings Edit
+ * @Author: Anthony_su
+ * @Date: 2019-09-11 21:31:36
+ * @LastEditTime: 2019-09-12 00:21:32
+ * @LastEditors: Please set LastEditors
+ -->
+<div id="app">
+  <input type="text" v-model="text">
+  {{ text }}
+  <button @click="reset">重置</button>
+</div>
+<script>    
+  function learnVm (options) {    
+    const {
+      el,
+      data,
+      methods
+    } = options;
+    this.methods = methods;
+    this.target = null;
+    // 发布初始化
+    this.observe(this, data);
+    // 订阅初始化
+    this.compile(document.getElementById(el));
+  }
+  /*
+    为啥是Object.defineProperty？
+    双向绑定不就是设置值的时候，改变视图，视图改变，值也变化吗？
+    那我总得知道什么时候他设置了值，什么时候改变了视图啊？
+    这就需要用到这个API的get和set,这点不再做详细介绍
+    通过循环data中的属性为data中的每一个属性都通过Object.defineProperty进行定义
+    从而重写data的set和get函数来实现的
+  */
+  learnVm.prototype.observe = function (root, data) { // 递归遍历进行拦截，并实例化dep对象，将其通过闭包保存在对象下的函数作用域中
+    for (const key in data) {
+      this.defineReactive(root, key, data[key]);
+    }
+  }
+  learnVm.prototype.defineReactive = function (root, key, value) {
+    /*
+    比如data数据是 data:{foo:{bar:ggg}}
+    那我们给foo进行数据劫持的同时，也要对bar做数据劫持啊
+    不然bar的改变就不会触发视图改变了
+    所以，这里使用递归对value（也就相当于data.foo）的值进行了判断并在此进行数据劫持
+    */
+    if (typeof value == 'object') {
+      return this.observe(value, value);
+    }
+    const dep = new Dispatcher();
+    /* 事件代理的同时进行事件劫持,这就是为什么第一个参数直接把this传进来
+      ，本来是this.data.xxx,后续就可以使用this.xxx来访问了，同时又重写了get和set，一举两得
+    */
+    Object.defineProperty(root, key, {
+      set(newValue) {
+        // 如果值和原来一样就不做处理 直接返回
+        if (value == newValue) return;
+        value = newValue;
+        // 数据改变通知触发视图替换操作，这叫发布
+        dep.notify(newValue);
+      },
+      get() {
+        /* add的过程就叫做订阅,这里的this.target是什么？
+        在compile阶段中你就会得到答案，往下看
+        */
+        dep.add(this.target);
+        return value;
+      }
+    });
+  }
+  //编译模板-也就是将 {{ msg }} 替换为msg真正的值的过程
+  learnVm.prototype.compile = function (dom) { // compile中替换{{msg}}，并且创建每个有data的节点下对应的watcher
+      //拿到$el这个dom节点下的所有子节点（注意node节点和元素节点的区别
+      const nodes = dom.childNodes;
+      //开始遍历所有的节点...（注意：for..in 拿到的是key,for..of拿到的是value）
+      for (const node of nodes) {
+        //nodeType为1是元素节点，2是属性节点，3是文本节点。
+        // 此处属性节点不需要关心,,,可以剔除
+        // 元素节点        
+        if (node.nodeType == 1) {
+          // 拿到所有的元素属性，比如v-model,style,@click这些属性
+          const attrs = node.attributes;
+          for (const attr of attrs) {
+            // 如果这个属性名称是v-model
+            if (attr.name == 'v-model') {
+              const name = attr.value;
+              // 绑定input事件
+              node.addEventListener('input', e => {
+                /*
+                    比如v-model="xxx"
+                    下边的目的是this.xxx = 输入的值，改变了data中的数据
+                    设置值就会触发发布订阅的发布，继而更新视图
+                */
+                this[name] = e.target.value;
+              });
+              /*
+              还记得上边留的那个坑吗？
+              this.target是什么？
+              是一个watcher的实例，每一个watcher都有一个
+              update方法来执行视图的更新操作，这里把这个watcher赋值给了this之后
+              。。。this.target就有值了，这够大白话了吧，没有一点专业术语了，哈哈
+              */
+              this.target = new Watcher(node, 'input');
+              // 这一步纯粹是为了触发该属性的get方法
+              // 从而执行get中的addS方法，来订阅事件
+              this[name];
+            }
+            // 如果是@click就监听为这个node监听事件
+            if (attr.name == '@click') {
+              const name = attr.value;
+              node.addEventListener('click', this.methods[name].bind(this));
+            }
+          }
+        }
+        // text节点--
+        if (node.nodeType == 3) {
+          // -匹配的就是{{ xxx }} 这段文本
+          const reg = /\{\{(.*)\}\}/;
+          // node.nodeValue此处就相当于 innerText
+          const match = node.nodeValue.match(reg);
+          if (match) {
+            // match[1]，看上边正则是不是有个括号，match[1]
+            //就是匹配括号中的内容并去两侧空格
+            const name = match[1].trim();
+            // 这不用解释了吧。上边解释过了，在强调下，这里的
+            // 第二个参数是因为，input更新视图改变的是它的value值
+            // 而别的文本节点改变的就是它的nodeValue,
+            //因此这里当时候会通过这个入参进行区分
+            this.target = new Watcher(node, 'text');                 
+            // 这一步是直接将 {{ xxx }} 替换为该有的值
+            node.nodeValue = this[name];
+          }
+        }
+      }
+  }
+
+  function Dispatcher () {    
+    this.watchers = [];
+  }
+  Dispatcher.prototype.add = function (watcher) {
+    this.watchers.push(watcher);
+  }
+  Dispatcher.prototype.notify = function (value) {
+    this.watchers.forEach(watcher => watcher.update(value)); // 这里的update相当于render方法,如果还有用户wather订阅的方法，则需要遍历,watcher下的key来执行
+  }  
+  // 一个指令类Watcher，用来绑定更新函数，实现对DOM元素的更新
+  function Watcher (node, type) {    
+      this.node = node;
+      this.type = type;
+  }
+  Watcher.prototype.update = function (value) { // 如果考虑watch则这里的逻辑需要改上面的notify
+    // 如果是input需要改变value值
+    if (this.type == 'input') {
+      this.node.value = value;
+    }
+    // 如果是text需要改变value值
+    if (this.type == 'text') {
+      this.node.nodeValue = value;
+    }
+  }  
+  
+</script>
+<script>
+  var vm = new learnVm({
+    el: 'app',
+    data: {
+      text: '321'
+    },
+    methods: {
+      reset() {
+        this.text = '123456';
+      },
+    },
+  });
+</script>
