@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>postMessageDemo</title>
+  </head>
+  <body>
+    <input type="text" onchange="inputChange(event)" />
+    <span id="fatherSpan">Father</span>
+    <br><br><br>
+    <iframe id="childFrame" src="./postMessage-2.html" width="1000" frameborder="0"></iframe>
+    <script>
+      function inputChange(e) {
+        console.log(e.target.value);
+        console.log(window.frames[0]);
+        window.frames[0].postMessage(
+          "hello there!" + e.target.value,
+          "http://127.0.0.1:5500"
+        );
+      }
+      function receiveMessage(event) {
+        // 我们能相信信息的发送者吗?  (也许这个发送者和我们最初打开的不是同一个页面).
+        if (event.origin !== "http://127.0.0.1:5500") return;
+        document.querySelector('#fatherSpan').innerText += (event.data)
+        // event.source 是我们通过window.open打开的弹出页面 popup
+        // event.data 是 popup发送给当前页面的消息 "hi there yourself!  the secret response is: rheeeeet!"
+      }
+      window.addEventListener("message", receiveMessage, false);
+    </script>
+  </body>
+</html>

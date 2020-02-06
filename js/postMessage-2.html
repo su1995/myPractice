@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>postMessageDemo-2</title>
+  </head>
+  <body>
+    <div id="childSpan">childHtml</div>
+    <script>
+      //当A页面postMessage被调用后，这个function被addEventListenner调用
+      function receiveMessage(event) {
+        // debugger
+        // // 我们能信任信息来源吗？
+        if (event.origin !== "http://127.0.0.1:5500") return;
+
+        // // event.source 就当前弹出页的来源页面
+        // // event.data 是 "hello there!"
+        document.querySelector('#childSpan').innerText += (event.data);
+        // 假设你已经验证了所受到信息的origin (任何时候你都应该这样做), 一个很方便的方式就是把event.source
+        // 作为回信的对象，并且把event.origin作为targetOrigin
+        event.source.postMessage(
+          `is: ${event.data}!`,
+          event.origin
+        );
+      }
+      window.addEventListener("message", receiveMessage, false);
+    </script>
+  </body>
+</html>
